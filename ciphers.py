@@ -1,6 +1,9 @@
 # ciphers.py
 # Cryptography algorithms for simulation
 
+from collections import Counter
+import string
+
 # Caesar Cipher
 def caesar_encrypt(text, shift):
     result = ""
@@ -95,7 +98,6 @@ def columnar_decrypt(cipher, key="HACK"):
     n_cols = len(key)
     n_rows = (len(cipher) + n_cols - 1) // n_cols
     grid = [[''] * n_cols for _ in range(n_rows)]
-    col_len = n_rows
     idx = 0
     for k in key_order:
         col = key.index(k)
@@ -104,3 +106,15 @@ def columnar_decrypt(cipher, key="HACK"):
                 grid[r][col] = cipher[idx]
                 idx += 1
     return ''.join(''.join(row) for row in grid).strip()
+
+# =========================
+# Frequency Analysis (NEW)
+# =========================
+def frequency_analysis(text):
+    text = text.upper()
+    letters_only = [ch for ch in text if ch in string.ascii_uppercase]
+    counts = Counter(letters_only)
+
+    # Ensure all A-Z included (even if 0 count)
+    freq_dict = {ch: counts.get(ch, 0) for ch in string.ascii_uppercase}
+    return freq_dict
