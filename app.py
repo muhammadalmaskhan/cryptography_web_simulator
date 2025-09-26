@@ -7,7 +7,7 @@ st.markdown("**Developed by Muhammad Almas (for educational simulation purposes 
 algorithms = ["Caesar", "ROT13", "Affine", "Rail Fence", "Columnar"]
 choice = st.selectbox("Select an Algorithm", algorithms)
 
-text = st.text_area("Enter your text")
+text = st.text_area("Enter your text (plaintext or ciphertext):")
 operation = st.radio("Operation", ["Encrypt", "Decrypt"])
 
 if choice == "Caesar":
