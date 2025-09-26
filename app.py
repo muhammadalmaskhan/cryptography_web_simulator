@@ -54,7 +54,7 @@ def coprimes_with_26():
     return [a for a in range(1, 26) if math.gcd(a, 26) == 1]
 
 # ------- Layout: Tabs for separation -------
-tab_cipher, tab_analysis = st.tabs(["Cipher Tools", "Cryptoanalysis"])
+tab_cipher, tab_analysis = st.tabs(["Cipher Schemes", "Cryptoanalysis"])
 
 # ----------------- Cipher Tools Tab -----------------
 with tab_cipher:
@@ -229,4 +229,4 @@ with tab_analysis:
 
 # ----------------- Footer / Tips -----------------
 st.markdown("---")
-st.markdown("**Tips:** Use Frequency Analysis to inspect letter distribution. Use Brute-force to generate candidate plaintexts — the chi-squared ranking often places likely English plaintexts near the top.")
+st.markdown("**Tips:** Use Frequency Analysis to inspect letter distribution. Use Brute-force to generate candidate plaintexts , the chi-squared ranking often places likely English plaintexts near the top.")
