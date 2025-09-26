@@ -58,7 +58,7 @@ tab_cipher, tab_analysis = st.tabs(["Cipher Schemes", "Cryptoanalysis"])
 
 # ----------------- Cipher Tools Tab -----------------
 with tab_cipher:
-    st.header("Cipher Tools")
+    st.header("Cipher Schemes")
     col1, col2 = st.columns([2, 1])
     with col1:
         algorithm = st.selectbox("Choose cipher", ["Caesar", "ROT13", "Affine", "Rail Fence", "Columnar"])
