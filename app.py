@@ -233,7 +233,7 @@ with tab_block:
             st.code(result)
         except Exception as e:
             st.error(f"Error: {e}")
-
+#------
 # ----------------- Footer -----------------
 st.markdown("---")
 st.markdown("**Tips:** Classical = old ciphers, Cryptoanalysis = attacks, Block Ciphers = modern algorithms like DES (insecure in practice, but good for teaching).")
