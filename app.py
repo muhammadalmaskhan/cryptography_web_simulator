@@ -19,7 +19,6 @@ ENGLISH_FREQ = {
     'Z': 0.074
 }
 
-# helper: letters
 LETTERS = list(string.ascii_uppercase)
 
 # ------- helper functions -------
@@ -28,13 +27,11 @@ def counts_to_percent(counts):
     return {k: (v / total) * 100 for k, v in counts.items()}
 
 def chi_squared_score(observed_counts):
-    """Chi-squared score: lower means closer to English distribution."""
     total = sum(observed_counts.values()) or 1
     score = 0.0
     for ch in LETTERS:
         obs = observed_counts.get(ch, 0)
         exp = total * (ENGLISH_FREQ[ch] / 100.0)
-        # avoid division by zero: if exp is extremely small, add large penalty if obs differs
         if exp < 1e-6:
             if obs > 0:
                 score += 1e6
@@ -54,9 +51,9 @@ def coprimes_with_26():
     return [a for a in range(1, 26) if math.gcd(a, 26) == 1]
 
 # ------- Layout: Tabs for separation -------
-tab_cipher, tab_analysis = st.tabs(["Cipher Schemes", "Cryptoanalysis"])
+tab_cipher, tab_analysis, tab_block = st.tabs(["Cipher Schemes", "Cryptoanalysis", "Block Ciphers"])
 
-# ----------------- Cipher Tools Tab -----------------
+# ----------------- Cipher Schemes Tab -----------------
 with tab_cipher:
     st.header("Cipher Schemes")
     col1, col2 = st.columns([2, 1])
@@ -65,7 +62,6 @@ with tab_cipher:
         input_text = st.text_area("Input text (plaintext or ciphertext)", height=180)
     with col2:
         st.markdown("### Parameters")
-        # dynamic parameters
         if algorithm == "Caesar":
             shift = st.number_input("Shift", value=3, step=1)
         elif algorithm == "Affine":
@@ -102,10 +98,8 @@ with tab_cipher:
 # ----------------- Cryptoanalysis Tab -----------------
 with tab_analysis:
     st.header("Cryptoanalysis Techniques")
-    # Sub-tabs for different analysis tools
     fa_tab, bf_tab = st.tabs(["Frequency Analysis", "Brute-force / Exhaustive Search"])
 
-    # ---- Frequency Analysis ----
     with fa_tab:
         st.subheader("Frequency Analysis (with English benchmark)")
         fa_text = st.text_area("Enter ciphertext to analyze", height=200, key="fa_text")
@@ -137,7 +131,6 @@ with tab_analysis:
                 else:
                     st.bar_chart(df[["Ciphertext %", "English %"]])
 
-                # Caesar suggestion
                 if apply_suggested:
                     most_common = max(counts.items(), key=lambda x: (x[1], -ord(x[0])))[0] if sum(counts.values()) > 0 else None
                     if most_common and counts[most_common] > 0:
@@ -151,7 +144,6 @@ with tab_analysis:
                     else:
                         st.info("No alphabetic characters found.")
 
-    # ---- Brute-force / Exhaustive Search ----
     with bf_tab:
         st.subheader("Brute-force & Exhaustive Key Search Simulations")
         bf_text = st.text_area("Enter ciphertext to bruteforce", height=160, key="bf_text")
@@ -164,7 +156,6 @@ with tab_analysis:
         with bf_cols[2]:
             top_n = st.number_input("Show top N candidates", value=10, min_value=1, step=1, key="topn")
 
-        # Caesar brute-force
         if run_caesar:
             if not bf_text.strip():
                 st.warning("Please enter ciphertext.")
@@ -175,7 +166,6 @@ with tab_analysis:
                     counts = get_letter_counts_from_text(plain)
                     score = chi_squared_score(counts)
                     candidates.append((shift_try, score, plain))
-                # sort by score (ascending)
                 candidates.sort(key=lambda x: x[1])
                 st.subheader("Top Caesar Candidates (lower chi-sq better)")
                 rows = []
@@ -183,14 +173,12 @@ with tab_analysis:
                     rows.append({"Shift": shift_try, "ChiSq": round(score, 2), "Plaintext (preview)": plain[:200]})
                 st.table(pd.DataFrame(rows))
 
-                # Let user pick one to apply
                 choose_shift = st.number_input("Apply which shift? (enter shift value)", value=candidates[0][0], min_value=0, max_value=25, step=1, key="apply_shift")
                 if st.button("Apply chosen shift", key="apply_shift_btn"):
                     decrypted = ciphers.caesar_decrypt(bf_text, int(choose_shift))
                     st.subheader("Decryption")
                     st.code(decrypted)
 
-        # Affine brute-force
         if run_affine:
             if not bf_text.strip():
                 st.warning("Please enter ciphertext.")
@@ -204,7 +192,6 @@ with tab_analysis:
                             score = chi_squared_score(counts)
                             candidates.append((a_try, b_try, score, plain))
                         except Exception:
-                            # modular inverse error or other, skip
                             continue
                 candidates.sort(key=lambda x: x[2])
                 st.subheader("Top Affine Candidates (lower chi-sq better)")
@@ -213,7 +200,6 @@ with tab_analysis:
                     rows.append({"a": a_try, "b": b_try, "ChiSq": round(score, 2), "Plaintext (preview)": plain[:200]})
                 st.table(pd.DataFrame(rows))
 
-                # Apply chosen (a,b)
                 col_a, col_b = st.columns(2)
                 with col_a:
                     apply_a = st.number_input("Apply a", value=candidates[0][0] if candidates else 1, min_value=1, max_value=25, step=1, key="apply_affine_a")
@@ -227,6 +213,27 @@ with tab_analysis:
                     except Exception as e:
                         st.error(f"Could not decrypt with (a={apply_a}, b={apply_b}): {e}")
 
-# ----------------- Footer / Tips -----------------
+# ----------------- Block Ciphers Tab -----------------
+with tab_block:
+    st.header("Modern Block Ciphers (DES Simulation)")
+
+    des_text = st.text_area("Enter text (plaintext for encryption, ciphertext in hex for decryption):", height=150, key="des_text")
+    key = st.text_input("Key (8 characters)", value="12345678", max_chars=8)
+    mode = st.selectbox("Mode", ["ECB", "CBC"])
+    iv = st.text_input("IV (8 characters, only for CBC)", value="abcdefgh") if mode == "CBC" else None
+    operation = st.radio("Operation", ["Encrypt", "Decrypt"], key="des_op")
+
+    if st.button("Run DES"):
+        try:
+            if operation == "Encrypt":
+                result = ciphers.des_encrypt(des_text, key, mode=mode, iv=iv)
+            else:
+                result = ciphers.des_decrypt(des_text, key, mode=mode, iv=iv)
+            st.subheader("Result")
+            st.code(result)
+        except Exception as e:
+            st.error(f"Error: {e}")
+
+# ----------------- Footer -----------------
 st.markdown("---")
-st.markdown("**Tips:** Use Frequency Analysis to inspect letter distribution. Use Brute-force to generate candidate plaintexts , the chi-squared ranking often places likely English plaintexts near the top.")
+st.markdown("**Tips:** Classical = old ciphers, Cryptoanalysis = attacks, Block Ciphers = modern algorithms like DES (insecure in practice, but good for teaching).")

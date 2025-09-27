@@ -36,8 +36,7 @@ def affine_encrypt(text, a=5, b=8):
 def affine_decrypt(cipher, a=5, b=8):
     result = ""
     m = 26
-    # Modular inverse of a
-    a_inv = pow(a, -1, m)
+    a_inv = pow(a, -1, m)  # modular inverse of a
     for ch in cipher:
         if ch.isalpha():
             base = ord('A') if ch.isupper() else ord('a')
@@ -108,13 +107,63 @@ def columnar_decrypt(cipher, key="HACK"):
     return ''.join(''.join(row) for row in grid).strip()
 
 # =========================
-# Frequency Analysis (NEW)
+# Frequency Analysis
 # =========================
 def frequency_analysis(text):
     text = text.upper()
     letters_only = [ch for ch in text if ch in string.ascii_uppercase]
     counts = Counter(letters_only)
+    return {ch: counts.get(ch, 0) for ch in string.ascii_uppercase}
 
-    # Ensure all A-Z included (even if 0 count)
-    freq_dict = {ch: counts.get(ch, 0) for ch in string.ascii_uppercase}
-    return freq_dict
+# =========================
+# DES (Modern Block Cipher)
+# =========================
+from Crypto.Cipher import DES
+from Crypto.Util.Padding import pad, unpad
+import binascii
+
+BLOCK_SIZE = 8  # DES block size (bytes)
+
+def des_encrypt(plaintext, key, mode='ECB', iv=None):
+    key_b = key.encode() if isinstance(key, str) else key
+    if len(key_b) != 8:
+        raise ValueError("DES key must be exactly 8 bytes")
+    pt_b = plaintext.encode()
+
+    if mode == 'ECB':
+        cipher = DES.new(key_b, DES.MODE_ECB)
+        ct = cipher.encrypt(pad(pt_b, BLOCK_SIZE))
+    elif mode == 'CBC':
+        if iv is None:
+            raise ValueError("IV required for CBC mode")
+        iv_b = iv.encode()
+        if len(iv_b) != 8:
+            raise ValueError("IV must be 8 bytes for DES")
+        cipher = DES.new(key_b, DES.MODE_CBC, iv=iv_b)
+        ct = cipher.encrypt(pad(pt_b, BLOCK_SIZE))
+    else:
+        raise ValueError("Unsupported mode")
+
+    return binascii.hexlify(ct).decode()
+
+def des_decrypt(cipher_hex, key, mode='ECB', iv=None):
+    key_b = key.encode() if isinstance(key, str) else key
+    if len(key_b) != 8:
+        raise ValueError("DES key must be exactly 8 bytes")
+    ct = binascii.unhexlify(cipher_hex)
+
+    if mode == 'ECB':
+        cipher = DES.new(key_b, DES.MODE_ECB)
+        pt = unpad(cipher.decrypt(ct), BLOCK_SIZE)
+    elif mode == 'CBC':
+        if iv is None:
+            raise ValueError("IV required for CBC mode")
+        iv_b = iv.encode()
+        if len(iv_b) != 8:
+            raise ValueError("IV must be 8 bytes for DES")
+        cipher = DES.new(key_b, DES.MODE_CBC, iv=iv_b)
+        pt = unpad(cipher.decrypt(ct), BLOCK_SIZE)
+    else:
+        raise ValueError("Unsupported mode")
+
+    return pt.decode()
