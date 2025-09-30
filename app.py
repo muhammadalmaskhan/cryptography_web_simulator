@@ -151,22 +151,16 @@ with tab_analysis:
 with tab_block:
     st.header("Modern Block Ciphers (DES Simulation)")
 
-    des_text = st.text_area("Enter text (plaintext for encryption, ciphertext in hex for decryption):", height=150, key="des_text")
+    des_text = st.text_input("Enter plaintext (e.g., A):", value="A")
     key = st.text_input("Key (8 characters)", value="12345678", max_chars=8)
-    mode = st.selectbox("Mode", ["ECB", "CBC"])
-    iv = st.text_input("IV (8 characters, only for CBC)", value="abcdefgh") if mode == "CBC" else None
-    operation = st.radio("Operation", ["Encrypt", "Decrypt"], key="des_op")
 
-    if st.button("Run DES"):
-        try:
-            if operation == "Encrypt":
-                result = ciphers.des_encrypt(des_text, key, mode=mode, iv=iv)
-            else:
-                result = ciphers.des_decrypt(des_text, key, mode=mode, iv=iv)
-            st.subheader("Result")
-            st.code(result)
-        except Exception as e:
-            st.error(f"Error: {e}")
+    if st.button("Run DES Simulation"):
+        from ciphers import des_simulate
+        steps = des_simulate(des_text, key)
+
+        for step, value in steps.items():
+            st.subheader(step)
+            st.write(value)
 
 # ----------------- Footer -----------------
 st.markdown("---")

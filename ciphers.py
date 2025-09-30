@@ -169,3 +169,55 @@ def des_decrypt(cipher_hex, key, mode='ECB', iv=None):
         raise ValueError("Unsupported mode")
 
     return pt.decode()
+# =========================
+# DES Educational Simulation
+# =========================
+# =========================
+# DES Educational Simulation (Stepwise)
+# =========================
+def des_simulate(plaintext, key):
+    """
+    Educational DES simulation: returns stepwise details.
+    This is not real DES encryption, only stepwise demo for teaching.
+    """
+    steps = {}
+
+    # 1. Convert to binary (8-bit per character)
+    pt_bytes = plaintext.encode()
+    pt_bin = ''.join(f'{b:08b}' for b in pt_bytes)
+    steps['1. ASCII to binary'] = pt_bin
+
+    # 2. Pad to 64-bit block
+    pt_bin_padded = pt_bin.ljust(64, '0')[:64]
+    steps['2. 64-bit padded block'] = pt_bin_padded
+
+    # 3. Initial Permutation (simplified demo: reverse bits)
+    ip_block = pt_bin_padded[::-1]
+    steps['3. Initial Permutation (demo)'] = ip_block
+
+    # 4. Split halves
+    L0, R0 = ip_block[:32], ip_block[32:]
+    steps['4. Split halves'] = {'L0': L0, 'R0': R0}
+
+    # 5. Feistel rounds (placeholder demo)
+    rounds = []
+    for i in range(1, 17):
+        rounds.append({
+            'Round': i,
+            'Subkey (48b)': f"K{i:02d}_demo",
+            'L': f"L{i}_demo",
+            'R': f"R{i}_demo"
+        })
+    steps['5. 16 Rounds'] = rounds
+
+    # 6. Swap + Final Permutation (demo: reverse again)
+    swapped = R0 + L0
+    fp_block = swapped[::-1]
+    steps['6. Final Permutation (demo)'] = fp_block
+
+    # 7. Ciphertext (hex)
+    ct_hex = hex(int(fp_block, 2))[2:].zfill(16)
+    steps['7. Ciphertext (hex)'] = ct_hex
+
+    return steps
+
