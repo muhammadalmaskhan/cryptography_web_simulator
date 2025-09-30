@@ -165,19 +165,19 @@ with tab_block:
 
 
 
-with tab_block:
-    st.header("Modern Block Ciphers (DES Simulation)")
+# with tab_block:
+#     st.header("Modern Block Ciphers (DES Simulation)")
 
-    des_text = st.text_input("Enter plaintext (e.g., A):", value="A")
-    key = st.text_input("Key (8 characters)", value="12345678", max_chars=8)
+#     des_text = st.text_input("Enter plaintext (e.g., A):", value="A")
+#     key = st.text_input("Key (8 characters)", value="12345678", max_chars=8)
 
-    if st.button("Run DES Simulation"):
-        from ciphers import des_simulate
-        steps = des_simulate(des_text, key)
+#     if st.button("Run DES Simulation"):
+#         from ciphers import des_simulate
+#         steps = des_simulate(des_text, key)
 
-        for step, value in steps.items():
-            st.subheader(step)
-            st.write(value)
+#         for step, value in steps.items():
+#             st.subheader(step)
+#             st.write(value)
 
 
 
