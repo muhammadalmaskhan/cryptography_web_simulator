@@ -3,6 +3,7 @@ import pandas as pd
 import string
 import math
 import ciphers
+import graphviz
 import altair as alt
 
 st.set_page_config(page_title="Cryptography Simulator", layout="wide")
@@ -151,6 +152,22 @@ with tab_analysis:
 with tab_block:
     st.header("Modern Block Ciphers (DES Simulation)")
 
+    des_text = st.text_input("Enter plaintext (e.g., A):", value="A", key="des_plaintext")
+    # key = st.text_input("Key (8 characters)", value="12345678", max_chars=8, key="des_key")
+
+    if st.button("Run DES Simulation", key="des_button"):
+        from ciphers import des_simulate
+        steps = des_simulate(des_text, key="12345678")
+
+        for step, value in steps.items():
+            st.subheader(step)
+            st.write(value)
+
+
+
+with tab_block:
+    st.header("Modern Block Ciphers (DES Simulation)")
+
     des_text = st.text_input("Enter plaintext (e.g., A):", value="A")
     key = st.text_input("Key (8 characters)", value="12345678", max_chars=8)
 
@@ -161,6 +178,61 @@ with tab_block:
         for step, value in steps.items():
             st.subheader(step)
             st.write(value)
+
+
+
+
+    # --- Optional: Animation of DES steps ---
+    import time
+
+    if st.checkbox("Show DES Flow Animation"):
+        st.subheader("DES Process Animation")
+
+        stages = [
+            "1. ASCII → Binary",
+            "2. Pad to 64-bit block",
+            "3. Initial Permutation",
+            "4. Split into L0 and R0",
+            "5. 16 Feistel Rounds",
+            "6. Swap Halves",
+            "7. Final Permutation",
+            "8. Ciphertext"
+        ]
+
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+
+        for i, stage in enumerate(stages):
+            status_text.text(stage)
+            progress_bar.progress((i + 1) / len(stages))
+            time.sleep(0.8)
+
+        st.success("DES Simulation Complete ✅")
+
+
+
+    # --- Optional: DES Flow Diagram ---
+if st.checkbox("Show DES Flow Diagram", key="des_diag"):
+    import graphviz
+    
+    dot = graphviz.Digraph(format="png")
+    dot.attr(rankdir="LR", size="8")  # Left to right flow
+
+    # Nodes
+    dot.node("PT", "Plaintext\n(64-bit)", shape="box", style="filled", color="lightblue")
+    dot.node("IP", "Initial Permutation\n(IP)", shape="box", style="rounded,filled", color="lightyellow")
+    dot.node("Split", "Split into L0 (32) | R0 (32)", shape="parallelogram", style="filled", color="lightgrey")
+    dot.node("Rounds", "16 Feistel Rounds\n(L,R updates + Subkeys)", shape="box3d", style="filled", color="lightgreen")
+    dot.node("Swap", "Swap Halves", shape="ellipse", style="filled", color="lightpink")
+    dot.node("FP", "Final Permutation\n(IP⁻¹)", shape="box", style="rounded,filled", color="lightyellow")
+    dot.node("CT", "Ciphertext\n(64-bit)", shape="box", style="filled", color="lightblue")
+
+    # Edges
+    dot.edges([("PT", "IP"), ("IP", "Split"), ("Split", "Rounds"),
+               ("Rounds", "Swap"), ("Swap", "FP"), ("FP", "CT")])
+
+    st.graphviz_chart(dot)
+
 
 # ----------------- Footer -----------------
 st.markdown("---")
